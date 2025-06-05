@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lights Out</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #282c34;
+            color: #ffffff;
+        }
+        .container {
+            text-align: center;
+            background-color: #3b3f47;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        td {
+            padding: 0;
+        }
+        button {
+            width: 60px;
+            height: 60px;
+            border: none;
+            margin: 2px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-radius: 5px;
+        }
+        button:focus {
+            outline: none;
+        }
+        .restart-link {
+            display: block;
+            margin: 20px auto;
+            font-size: 16px;
+            cursor: pointer;
+            color: #61dafb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .restart-link:hover {
+            color: #21a1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lights Out</h1>
+        <table>
+            {% for row_index, row in enumerate(board) %}
+            <tr>
+                {% for col_index, cell in enumerate(row) %}
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="row" value="{{ row_index }}">
+                        <input type="hidden" name="col" value="{{ col_index }}">
+                        <button type="submit" style="background-color: {{ 'red' if cell else 'black' }}"></button>
+                    </form>
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+        <a href="{{ url_for('lights_out_restart') }}" class="restart-link">Restart</a>
+    </div>
+
+    {% if win %}
+    <div class="victory-popup" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.95);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1000;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    ">
+        <h2 style="color: #ffd700; margin-bottom: 15px;">Victory!</h2>
+        <p style="color: #fff; font-size: 1.2em;"> {{ success_number }}</p>
+    </div>
+    {% endif %}
+</body>
+</html>

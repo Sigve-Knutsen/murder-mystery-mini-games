@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Utfordring</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #1a1a1a;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #game-container {
+            background: #2d2d2d;
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 95vw;
+            max-height: 95vh;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), 1fr);
+            gap: 2px;
+            background: #222;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            width: min(90vw, 90vh);
+            height: min(90vw, 90vh);
+        }
+
+        .square {
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%;
+            position: relative;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .square:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .full {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+        }
+
+        .half {
+            background: linear-gradient(135deg, #4a4e69, #22223b);
+        }
+
+        .empty {
+            background: transparent;
+            pointer-events: none;
+        }
+
+        .valid-move {
+            outline: 2px solid rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 1;
+        }
+
+        .valid-move::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 4px;
+            background: transparent;
+            animation: glow 1.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            padding: 15%;
+            box-sizing: border-box;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+        }
+
+        button {
+            margin-top: 1rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            color: white;
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .game-over-content {
+            background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
+            padding: 2rem 3rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            transform: scale(0.9);
+            animation: popIn 0.3s forwards;
+        }
+
+        .game-over-content h2 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5),
+                            0 0 10px rgba(255, 255, 255, 0.3),
+                            0 0 15px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+                            0 0 20px rgba(255, 255, 255, 0.5),
+                            0 0 30px rgba(255, 255, 255, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5),
+                            0 0 10px rgba(255, 255, 255, 0.3),
+                            0 0 15px rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            #game-container {
+                padding: 0.5rem;
+            }
+
+            .game-board {
+                gap: 1px;
+                padding: 4px;
+            }
+
+            .shape {
+                padding: 10%;
+            }
+        }
+
+        .timer-container {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            margin-bottom: 1rem;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff4d4d, #cc0000);
+            transition: width 0.1s linear;
+        }
+
+        .score-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .score {
+            font-weight: bold;
+            color: #ff4d4d;
+        }
+
+        .time-settings select {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .time-settings select:hover {
+            background: #444;
+        }
+
+        .time-settings {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .small-button {
+            width: auto;
+            padding: 4px 8px;
+            margin: 0;
+            font-size: 14px;
+            background: #333;
+        }
+
+        .small-button:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="score-container">
+            <div>Poeng: <span id="currentScore" class="score">0</span></div>
+            <div>Mål: <span id="targetScore" class="score">0</span></div>
+            <div class="time-settings">
+                <select id="timeSelect" disabled>
+                    <option value="10">10s</option>
+                    <option value="20">20s</option>
+                    <option value="30" selected>30s</option>
+                    <option value="45">45s</option>
+                    <option value="60">60s</option>
+                </select>
+                <button class="small-button" onclick="promptPassword()">⚙️</button>
+            </div>
+        </div>
+        <div class="timer-container">
+            <div id="timer-bar" class="timer-bar"></div>
+        </div>
+        <div class="game-board" id="board"></div>
+        <!-- Removed the New Game button from here -->
+    </div>
+    <div class="game-over" id="gameOverScreen">
+        <div class="game-over-content">
+            <h2 id="gameOverMessage">Spillet er over!</h2>
+            <div id="usernameReveal" style="display: none; margin: 1rem 0; color: #ff4d4d;">
+                Brukernavn: Lord_Greven_Felix
+            </div>
+            <button onclick="newGame()">Spill igjen</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedPos = null;
+        let gameState = null;
+        let validMoves = [];
+        let lastMovedShape = null;  // Add this to track the last moved shape
+        let timerInterval = null;
+        let timeLeft = 0;
+
+        async function initGame() {
+            const response = await fetch('/new_game');
+            gameState = await response.json();
+            document.documentElement.style.setProperty('--grid-size', gameState.grid_size);
+            timeLeft = gameState.timer_duration; // Already in milliseconds
+            
+            // Set the correct time option
+            const timeSelect = document.getElementById('timeSelect');
+            const seconds = Math.floor(gameState.timer_duration / 1000);
+            timeSelect.value = seconds.toString();
+            
+            renderBoard();
+        }
+
+        async function getValidMoves(pos, shape) {
+            const response = await fetch('/get_valid_moves', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pos, shape })
+            });
+            return await response.json();
+        }
+
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            
+            // Update target score display
+            document.getElementById('targetScore').textContent = gameState.target_score;
+            
+            for (let y = 0; y < 8; y++) {
+                for (let x = 0; x < 8; x++) {
+                    const square = document.createElement('div');
+                    const state = gameState.board_state[y][x];
+                    const shape = gameState.board_shapes[y][x];
+                    
+                    square.className = `square ${state === 1 ? 'full' : state === 2 ? 'half' : 'empty'}`;
+                    square.dataset.x = x;
+                    square.dataset.y = y;
+                    
+                    if (state !== 3) {
+                        const shapeElement = document.createElement('img');
+                        shapeElement.className = 'shape';
+                        // Oppdater stien til å bruke absolutt URL
+                        shapeElement.src = `/static/images/${shape === 1 ? 'ace' : shape === 2 ? 'egg' : 'fire'}.svg`;
+                        square.appendChild(shapeElement);
+                    }
+                    
+                    square.onclick = () => handleClick(x, y);
+                    board.appendChild(square);
+                }
+            }
+            updateScore();
+        }
+
+        async function handleClick(x, y) {
+            // Handle initial click on a non-empty square
+            if (selectedPos === null && gameState.board_state[y][x] !== 3) {
+                // Start timer on first move
+                if (!gameState.chain_started) {
+                    startTimer();
+                }
+                selectedPos = [x, y];
+                const currentShape = gameState.board_shapes[y][x];
+                
+                // Start the chain and make the initial move
+                if (!gameState.chain_started) {
+                    await fetch('/start_chain', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    gameState.chain_started = true;
+                    
+                    // Make the initial move to change the square state
+                    const response = await fetch('/make_move', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            pos: [x, y],
+                            skipShapeChange: true
+                        })
+                    });
+                    gameState = await response.json();
+                }
+                
+                validMoves = await getValidMoves([x, y], currentShape);
+                validMoves = validMoves.filter(([mx, my]) => 
+                    gameState.board_state[my][mx] !== 3
+                );
+                
+                renderBoard();
+                
+                if (validMoves.length === 0) {
+                    showGameOver("Ingen flere trekk!");
+                    selectedPos = null;
+                    clearHighlights();
+                    return;
+                }
+                
+                highlightValidMoves(validMoves);
+            }
+            // Rest of the handleClick function remains the same...
+            else if (selectedPos !== null && validMoves.some(([vx, vy]) => vx === x && vy === y)) {
+                const response = await fetch('/make_move', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        pos: [x, y],
+                        skipShapeChange: true
+                    })
+                });
+                gameState = await response.json();
+                
+                // Get valid moves for the new position
+                const newShape = gameState.board_shapes[y][x];
+                validMoves = await getValidMoves([x, y], newShape);
+                validMoves = validMoves.filter(([mx, my]) => 
+                    gameState.board_state[my][mx] !== 3
+                );
+                
+                renderBoard();
+                
+                if (validMoves.length === 0) {
+                    showGameOver("Ingen flere trekk!");
+                    selectedPos = null;
+                    clearHighlights();
+                    return;
+                }
+                
+                selectedPos = [x, y];
+                highlightValidMoves(validMoves);
+            }
+            
+            // Add this check after each move response
+            if (gameState.squares_removed >= gameState.target_score) {
+                showGameOver();  // Remove the "You Won!" message
+                selectedPos = null;
+                clearHighlights();
+                return;
+            }
+            // Update score after each move
+            updateScore();
+        }
+
+        async function checkGameOver() {
+            if (!gameState.chain_started) {
+                return false;
+            }
+            return true;
+        }
+
+        function showGameOver(message = null) {
+            clearInterval(timerInterval);
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            const gameOverMessage = document.getElementById('gameOverMessage');
+            const usernameReveal = document.getElementById('usernameReveal');
+            
+            if (message) {
+                gameOverMessage.textContent = message;
+                usernameReveal.style.display = 'none';
+            } else {
+                // Check if this is a win condition (player reached target score)
+                if (gameState.squares_removed >= gameState.target_score) {
+                    gameOverMessage.textContent = ' ';  // Clear the message
+                    usernameReveal.innerHTML = gameState.success_number;  // Only show the code
+                    usernameReveal.style.display = 'block';
+                } else {
+                    // Time ran out
+                    gameOverMessage.textContent = 'Tiden er ute!';
+                    usernameReveal.style.display = 'none';
+                }
+            }
+            
+            gameOverScreen.style.display = 'flex';
+        }
+
+        function highlightValidMoves(moves) {
+            clearHighlights();
+            moves.forEach(([x, y]) => {
+                const square = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                if (square) square.classList.add('valid-move');
+            });
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('.valid-move').forEach(square => {
+                square.classList.remove('valid-move');
+            });
+        }
+
+        function newGame() {
+            clearInterval(timerInterval);
+            const timerBar = document.getElementById('timer-bar');
+            timerBar.style.width = '100%';
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            gameOverScreen.style.display = 'none';
+            selectedPos = null;
+            lastMovedShape = null;  // Reset last moved shape
+            validMoves = [];
+            clearHighlights();
+            initGame();
+            updateScore();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = gameState.timer_duration;
+            const timerBar = document.getElementById('timer-bar');
+            timerBar.style.width = '100%';
+            
+            timerInterval = setInterval(() => {
+                timeLeft -= 10;
+                const percentage = (timeLeft / gameState.timer_duration) * 100;
+                timerBar.style.width = `${percentage}%`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showGameOver();
+                    selectedPos = null;
+                    clearHighlights();
+                }
+            }, 10);
+        }
+
+        async function promptPassword() {
+            const password = prompt("Skriv inn passord for å endre tid:");
+            if (password === "sos.kom666") {
+                const timeSelect = document.getElementById('timeSelect');
+                timeSelect.disabled = false;
+                timeSelect.onchange = (e) => updateTime(e.target.value);
+                alert("Tidsinnstillinger låst opp!");
+            } else if (password !== null) {
+                alert("Feil passord");
+            }
+        }
+
+        async function updateTime(seconds) {
+            const response = await fetch('/update_time', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ time: parseInt(seconds) })
+            });
+            gameState = await response.json();
+            timeLeft = gameState.timer_duration;
+            
+            // Only restart timer if game hasn't started
+            if (!gameState.chain_started) {
+                const timerBar = document.getElementById('timer-bar');
+                timerBar.style.width = '100%';
+            }
+        }
+
+        function updateScore() {
+            const scoreElement = document.getElementById('currentScore');
+            scoreElement.textContent = gameState.squares_removed || 0;
+        }
+
+        // Initialize the game when the page loads
+        initGame();
+    </script>
+</body>
+</html>

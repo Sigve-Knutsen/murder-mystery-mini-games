@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Start Verbal Memory Test</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .container {
+            text-align: center;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+            background-color: #808080;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #696969;
+        }
+        .start-button {
+            background-color: #ff0000 !important;  /* Red color */
+        }
+        .start-button:hover {
+            background-color: #cc0000 !important;  /* Darker red on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form action="/Verbal_memory" method="get">
+            <button type="submit" class="start-button">Start</button>
+        </form>
+    </div>
+</body>
+</html>

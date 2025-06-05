@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Color Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d3436 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: #2c3e50;
+            padding: min(1rem, 2vw);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 95vw;
+            max-height: 95vh;
+            width: min(95vw, 95vh);
+            height: min(95vh, 95vw);
+            margin: auto;
+            overflow: hidden;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .grid {
+            display: grid;
+            gap: 0;  /* Remove gap from grid */
+            background: #34495e;
+            padding: min(10px, 1.5vw);
+            border-radius: 12px;
+            width: 100%;
+            aspect-ratio: 1;
+            height: 100%;
+            box-sizing: border-box;
+            grid-template-rows: repeat(8, 1fr);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);  /* Change to grid layout */
+            gap: min(4px, 0.5vw);  /* Add consistent gap */
+            height: calc(100% / 8);
+            padding: min(2px, 0.25vw);  /* Add small padding between rows */
+            width: 100%;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .cell {
+            width: 100%;  /* Fill the grid cell */
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            aspect-ratio: 1;  /* Ensure square shape */
+            -webkit-tap-highlight-color: transparent;  /* Prevent tap highlight on iOS */
+            -webkit-touch-callout: none;    /* Prevent callout on long press */
+            -webkit-user-select: none;      /* Prevent text selection */
+            user-select: none;              /* Prevent text selection */
+            transform: scale(1);  /* Add this to ensure initial state */
+        }
+
+        @media (hover: hover) {
+            .cell:hover {
+                transform: scale(1.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        .cell:active {
+            transform: scale(0.95);
+            transition: transform 0.1s;
+        }
+
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            padding: clamp(15px, 4vw, 25px);
+            border-radius: 10px;
+            font-weight: 500;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            visibility: hidden;  /* Change from display: none */
+            opacity: 0;         /* Add opacity */
+            z-index: 100;
+            width: min(80%, 300px);
+            font-size: clamp(14px, 3vw, 18px);
+            transition: visibility 0s, opacity 0.3s;  /* Add transition */
+        }
+
+        .message.show {
+            visibility: visible;  /* Change from display: block */
+            opacity: 1;
+        }
+
+        .message a {
+            display: inline-block;
+            margin-top: clamp(8px, 2vw, 15px);
+            padding: clamp(6px, 2vw, 12px) clamp(12px, 3vw, 24px);
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-size: clamp(12px, 2.5vw, 16px);
+            white-space: nowrap;
+        }
+
+        .message a:hover {
+            background: #c0392b;  /* Changed hover color to darker red */
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 90;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 0.5rem;
+            }
+            .row {
+                gap: 2px;  /* Smaller gap for mobile */
+            }
+        }
+
+        @media (max-height: 800px) {
+            .message {
+                margin: min(10px, 2vw) 0;
+                padding: min(10px, 1.5vw) min(15px, 2.5vw);
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .game-container {
+                width: 95vh;
+                height: 95vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="grid">
+            {% for row in range(board|length) %}
+            <div class="row">
+                {% for col in range(board[row]|length) %}
+                <div class="cell" 
+                     style="background-color: {{ board[row][col] }}"
+                     data-row="{{ row }}"
+                     data-col="{{ col }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <div id="overlay" class="overlay"></div>
+        <div id="game-message" class="message">
+            <div id="message-text"></div>
+            <a href="/color_connect/restart" id="restart-button">Play Again</a>
+        </div>
+        <div id="victory-popup" class="message" style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            visibility: hidden;
+            opacity: 0;
+        ">
+            <h2 style="color: #ffd700; margin-bottom: 15px;">Victory!</h2>
+            <p style="color: #fff; font-size: 1.2em;">Secret Code: 1234</p>
+        </div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('overlay');
+        const gameMessage = document.getElementById('game-message');
+        const messageText = document.getElementById('message-text');
+
+        function showMessage(text) {
+            messageText.textContent = text;
+            overlay.classList.add('show');
+            gameMessage.classList.add('show');
+            console.log('Showing message:', text); // Debug line
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize empty cells with dark color
+            document.querySelectorAll('.cell').forEach(cell => {
+                if (!cell.style.backgroundColor) {
+                    cell.style.backgroundColor = '#1a1a1a';
+                }
+            });
+        });
+
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', async () => {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                
+                try {
+                    const response = await fetch('/color_connect/click', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `row=${row}&col=${col}`
+                    });
+                    
+                    const data = await response.json();
+                    console.log("Response data:", data);  // Debug logging
+
+                    if (data.error) {
+                        console.error("Error:", data.error);
+                        return;
+                    }
+
+                    // Update the board
+                    document.querySelectorAll('.cell').forEach(cell => {
+                        const r = parseInt(cell.dataset.row);
+                        const c = parseInt(cell.dataset.col);
+                        cell.style.backgroundColor = data.board[r][c] || '#1a1a1a';
+                    });
+
+                    if (data.completed) {
+                        const victoryPopup = document.getElementById('victory-popup');
+                        const codeElement = victoryPopup.querySelector('p');
+                        codeElement.textContent = ` ${data.success_number}`;
+                        victoryPopup.style.visibility = 'visible';
+                        victoryPopup.style.opacity = '1';
+                        document.getElementById('overlay').classList.add('show');
+                    } else if (data.no_moves) {
+                        showMessage('No more moves available! Game Over!');
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

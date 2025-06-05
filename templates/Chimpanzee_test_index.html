@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chimpanzee test</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            transition: background-color 0.5s;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px;
+            width: 90vmin;
+            height: 90vmin;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            position: relative;
+        }
+        .cell:active {
+            transform: scale(0.95);
+        }
+        .cell.red {
+            background-color: #ff0000;
+        }
+        .cell.grey {
+            background-color: #6c757d;
+        }
+        .cell.disabled {
+            pointer-events: none;
+        }
+        .message {
+            color: #ff6b6b;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .flash {
+            background-color: #00ff00 !important;
+            box-shadow: none !important;
+        }
+        @media (max-width: 600px) {
+            .grid {
+                gap: 5px;
+            }
+        }
+        .cell-number {
+            position: absolute;
+            font-size: 1.5em;
+            color: #ffffff;
+        }
+        .cell.flash {
+            background-color: #00ff00 !important;
+            box-shadow: none !important;
+        }
+        .cell.active {
+            background-color: #2e2e2e;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .cell:not(.active) {
+            background-color: #121212;
+            pointer-events: none;
+            box-shadow: none;
+        }
+        .cell.wrong-flash {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .game-over-container {
+            background-color: #1e1e1e;
+            padding: 5vh 5vw;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 500px;
+            margin: 20px;
+        }
+
+        .game-over h1 {
+            color: #ff0000;
+            font-size: min(4em, 10vw);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-over button {
+            padding: min(15px, 3vw) min(30px, 5vw);
+            font-size: min(1.2em, 5vw);
+            background-color: #2e2e2e;
+            color: white;
+            border: 2px solid #3e3e3e;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: min(200px, 60%);
+        }
+
+        @media (max-width: 600px) {
+            .game-over-container {
+                padding: 20px;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if error %}
+        <p class="message">Incorrect pattern, try again!</p>
+    {% endif %}
+    <div class="grid">
+        {% for row, col in all_positions %}
+            {% if (row, col) in pattern %}
+                {% set order = pattern.index((row, col)) + 1 %}
+                <div class="cell active" data-row="{{ row }}" data-col="{{ col }}" data-order="{{ order }}">
+                    <span class="cell-number">{{ order }}</span>
+                </div>
+            {% else %}
+                <div class="cell" data-row="{{ row }}" data-col="{{ col }}"></div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <form id="next-level-form" method="post" action="{{ url_for('chimpanzee_next_level') }}" style="display: none;">
+        <button type="submit">Next Level</button>
+    </form>
+    <div class="game-over">
+        <div class="game-over-container">
+            <h1>Game Over!</h1>
+            <button onclick="window.location.href='{{ url_for('chimpanzee_test') }}'">Try Again</button>
+        </div>
+    </div>
+
+    {% if win %}
+    <div class="victory-popup" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1000;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    ">
+        <h2 style="color: #ffd700; margin-bottom: 15px;">Victory!</h2>
+        <p style="color: #fff; font-size: 1.2em;">{{ success_number }}</p>
+    </div>
+    {% endif %}
+
+    <script>
+        const pattern = {{ pattern|tojson }};
+        const cells = document.querySelectorAll('.cell.active');  // Only select active cells
+        const body = document.body;
+        let wrongGuesses = {{ wrong_guesses }};
+        let currentOrder = 1;
+        let firstClick = false;
+
+        function showPattern() {
+            cells.forEach(cell => {
+                const number = cell.querySelector('.cell-number');
+                if (number) {
+                    number.style.display = 'block';
+                }
+            });
+        }
+
+        function hideNumbers() {
+            cells.forEach(cell => {
+                const number = cell.querySelector('.cell-number');
+                if (number) {
+                    number.style.display = 'none';
+                }
+            });
+        }
+
+        function checkPattern(row, col) {
+            const cell = document.querySelector(`.cell.active[data-row="${row}"][data-col="${col}"]`);
+            if (!cell) return;
+
+            if (!firstClick) {
+                hideNumbers();
+                firstClick = true;
+            }
+
+            const expectedOrder = parseInt(cell.getAttribute('data-order'));
+
+            if (expectedOrder === currentOrder) {
+                cell.classList.add('flash');  // Keep green flash for correct cells
+                setTimeout(() => cell.classList.remove('flash'), 200);
+                cell.style.visibility = 'hidden';
+                currentOrder++;
+                if (currentOrder > pattern.length) {
+                    // Remove flash effect and directly submit for next level
+                    document.getElementById('next-level-form').submit();
+                }
+            } else {
+                cell.style.backgroundColor = '#ff0000';  // Red flash for wrong cells
+                setTimeout(() => {
+                    cell.style.backgroundColor = '';  // Reset color
+                    cell.classList.add('grey');
+                }, 200);
+                wrongGuesses++;
+                if (wrongGuesses >= 3) {
+                    setTimeout(() => {
+                        showGameOver();
+                    }, 300);
+                }
+            }
+        }
+
+        function showGameOver() {
+            const gameOver = document.querySelector('.game-over');
+            gameOver.style.display = 'flex';
+        }
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', () => {
+                const row = cell.getAttribute('data-row');
+                const col = cell.getAttribute('data-col');
+                checkPattern(row, col);
+            });
+        });
+
+        showPattern();  // This will now show numbers until first click
+    </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Verbal Memory Test</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .container {
+            text-align: center;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+            background-color: #808080;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #696969;
+        }
+        .progress-bar-container {
+            margin-top: 20px;
+            width: 100%;
+            background-color: #333;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar-inner {
+            height: 20px;
+            background-color: #ff0000;
+            width: 100%;
+        }
+        .restart-button {
+            background-color: #ff0000 !important;  /* Red color */
+        }
+        .restart-button:hover {
+            background-color: #cc0000 !important;  /* Darker red on hover */
+        }
+    </style>
+    <script>
+        let timerInterval;  // Add this to track the interval
+        
+        function startTimer(timeRemaining, showTimer) {
+            if (showTimer) {
+                const progressBar = document.getElementById('progress-bar-inner');
+                const initialWidth = (timeRemaining / 20) * 100;
+                progressBar.style.width = initialWidth + '%';
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    const currentWidth = (timeRemaining / 20) * 100;
+                    progressBar.style.width = currentWidth + '%';
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        document.getElementById('timeout-form').submit();
+                    }
+                }, 1000);
+
+                // Stop timer if victory popup is shown
+                if (document.querySelector('.victory-popup')) {
+                    clearInterval(timerInterval);
+                }
+            }
+        }
+    </script>
+</head>
+<body onload="startTimer({{ time_remaining }}, {{ show_timer | tojson }})">
+    <div class="container">
+        <p>Score: {{ score }}</p>
+        <h2>{{ word }}</h2>
+        {% if not show_restart %}
+        <form action="/submit" method="post">
+            <button type="submit" name="answer" value="seen">Sett</button>
+            <button type="submit" name="answer" value="new">Nytt</button>
+        </form>
+        {% else %}
+        <form action="/restart" method="post">
+            <button type="submit" class="restart-button">Start på nytt</button>
+        </form>
+        {% endif %}
+        <form id="timeout-form" action="/timeout" method="post" style="display: none;"></form>
+        <p>{{ feedback }}</p>
+        <div class="progress-bar-container" {% if not show_timer %}style="display: none;"{% endif %}>
+            <div id="progress-bar-inner" class="progress-bar-inner"></div>
+        </div>
+    </div>
+
+    {% if win %}
+    <div class="victory-popup" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.95);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1000;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    ">
+        <h2 style="color: #ffd700; margin-bottom: 15px;">Victory!</h2>
+        <p style="color: #fff; font-size: 1.2em;"> {{ success_number }}</p>
+        <form action="/restart" method="post" style="margin-top: 20px;">
+            <button type="submit" class="restart-button">Play Again</button>
+        </form>
+    </div>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            background: #000080; /* Classic Windows blue */
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABnSURBVHja7M5BDQAwDAShu9RxrYB/G40ZFH3sNfJ7bnt4bu/Mcs2e97tPm9vWtq29a5LMrcpsK8rcNsncNsncNsncNsncNsncNsncNsncNsncNsncNsncNsncNsncNsnctvpj+wDCJwDlJlfANQAAAABJRU5ErkJggg=='); /* Add a subtle pattern */
+            background-repeat: repeat;
+        }
+
+        .login-container {
+            background: #c0c0c0; /* Classic Windows gray */
+            padding: 30px;
+            border: 8px solid;
+            border-color: #ffffff #808080 #808080 #ffffff; /* 3D effect borders */
+            width: calc(100% - 30px);
+            max-width: 400px;
+            margin: 10px;
+            box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #808080;
+            padding-bottom: 15px;
+        }
+
+        .login-header h1 {
+            color: #000080; /* Classic Windows blue */
+            font-size: 24px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0;
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            text-shadow: 2px 2px 0 #808080;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: #ffffff;
+            border: 3px solid;
+            border-color: #808080 #ffffff #ffffff #808080; /* Inset effect */
+            color: #000000;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #000080;
+        }
+
+        .login-button {
+            background: #c0c0c0;
+            color: #000000;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff; /* 3D effect */
+            padding: 14px 20px;
+            width: 100%;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.1s ease;
+        }
+
+        .login-button:hover {
+            background: #d0d0d0;
+        }
+        
+        .login-button:active {
+            border-color: #808080 #ffffff #ffffff #808080; /* Pressed effect */
+            transform: translateY(2px);
+        }
+
+        .error-message {
+            color: #ff0000;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+            background: #ffff00;
+            padding: 5px;
+            border: 1px solid #ff0000;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            .login-container {
+                padding: 20px;
+                margin: 0;
+                width: 100%;
+                border-width: 4px;
+                box-shadow: none;
+                min-height: 100vh;
+            }
+            .login-header h1 {
+                font-size: 20px;
+            }
+            .form-group label {
+                font-size: 16px;
+            }
+            .form-group input {
+                font-size: 16px;
+                padding: 10px;
+            }
+            .login-button {
+                padding: 15px;
+                font-size: 16px;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Police Database</h1>
+        </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %} 
+        {% endwith %}
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">User ID</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Access Code</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-button">Access</button>
+        </form>
+    </div>
+</body>
+</html>

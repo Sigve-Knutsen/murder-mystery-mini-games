@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create New Report</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            background: #000080; /* Windows 95 blue */
+            color: #000000;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .compose-box {
+            background: #c0c0c0; /* Classic Windows gray */
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 4px solid;
+            border-color: #ffffff #808080 #808080 #ffffff; /* 3D effect borders */
+            box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.5);
+            overflow: hidden; /* Add overflow hidden to contain all elements */
+        }
+        .form-field {
+            padding: 15px;
+            border-bottom: 1px solid #808080;
+            width: 100%; /* Ensure full width */
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        input, textarea {
+            width: 100%;
+            border: 3px solid;
+            border-color: #808080 #ffffff #ffffff #808080; /* Inset effect */
+            background: #ffffff;
+            color: #000000;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            box-sizing: border-box; /* Important: include border in width calculation */
+        }
+        
+        /* Special styling for subject field */
+        input[name="subject"] {
+            font-weight: bold;
+            color: #000080;
+            font-size: 17px;
+            padding: 14px;
+            background-color: #f5f5f5;
+        }
+        
+        input[name="subject"]:focus {
+            background-color: #ffffcc;
+        }
+        
+        textarea {
+            min-height: 300px;
+            resize: vertical;
+            margin-top: 10px;
+            max-width: 100%; /* Ensure text area doesn't exceed container */
+            display: block; /* Make it a block element */
+        }
+        .send-button {
+            background: #c0c0c0;
+            color: #000000;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff; /* 3D effect */
+            padding: 15px 24px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin-top: 20px;
+            width: 100%;
+            font-weight: bold;
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        .send-button:hover {
+            background: #d0d0d0;
+        }
+        .send-button:active {
+            border-color: #808080 #ffffff #ffffff #808080; /* Pressed effect */
+        }
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #000000;
+            text-decoration: none;
+            margin-top: 20px;
+            width: fit-content;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 12px 16px;
+            background: #c0c0c0;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            background: #d0d0d0;
+        }
+        .back-link:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+        .form-title {
+            background: #000080;
+            color: #ffffff;
+            padding: 10px 8px;
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            font-size: 16px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            text-shadow: 2px 2px 0px #000000;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-title::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                         rgba(255,255,255,0) 0%, 
+                         rgba(255,255,255,0.15) 50%, 
+                         rgba(255,255,255,0) 100%);
+            background-size: 100% 8px;
+            pointer-events: none;
+            animation: scanline 4s linear infinite;
+            opacity: 0.4;
+        }
+        
+        @keyframes scanline {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 0 100%;
+            }
+        }
+        .add-image-button {
+            background: #c0c0c0;
+            color: #000000;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 10px 16px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .add-image-button:hover {
+            background: #d0d0d0;
+        }
+        .add-image-button:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+            .compose-box {
+                margin: 0;
+                padding: 15px;
+                width: 100%;
+                border-width: 2px;
+                box-shadow: none;
+                min-height: 100vh;
+            }
+            textarea {
+                min-height: 200px;
+            }
+            .form-field {
+                padding: 10px;
+            }
+            .form-title {
+                font-size: 14px;
+                text-shadow: 1px 1px 0px #000000;
+                letter-spacing: 0;
+            }
+            
+            .form-title::after {
+                animation: none; /* Disable animation on mobile */
+            }
+            input, textarea {
+                font-size: 16px; /* Better size for mobile */
+                padding: 10px;
+            }
+            .send-button, .back-link {
+                padding: 15px;
+            }
+            .back-link {
+                margin-bottom: 20px;
+            }
+            /* Fix for iOS zooming when focusing on inputs */
+            @supports (-webkit-touch-callout: none) {
+                input, textarea, select {
+                    font-size: 16px;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="compose-box">
+        <h1 class="form-title">CREATE NEW REPORT</h1>
+        <form method="POST">
+            <div class="form-field">
+                <input type="email" name="to" placeholder="Recipient/Reference" required>
+            </div>
+            <div class="form-field">
+                <input type="text" name="subject" placeholder="Report Title" required>
+            </div>
+            <div class="form-field">
+                <textarea name="body" placeholder="Report content..." required></textarea>
+            </div>
+            <div class="form-field">
+                <div id="image-inputs">
+                    <input type="text" name="images[]" placeholder="Evidence/Documentation URL (optional)">
+                </div>
+                <button type="button" onclick="addImageInput()" class="add-image-button">Add more documents</button>
+            </div>
+            <button type="submit" class="send-button">Archive Report</button>
+        </form>
+        <a href="{{ url_for('inbox') }}" class="back-link">
+            <span class="material-icons">arrow_back</span>
+            <span>Back to Report Archive</span>
+        </a>
+    </div>
+    <script>
+        function addImageInput() {
+            const container = document.getElementById('image-inputs');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'images[]';
+            input.placeholder = 'Evidence/Documentation URL (optional)';
+            container.appendChild(input);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Murder Mystery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            color: #ffffff;
+        }
+        .container {
+            text-align: center;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            width: 95%;
+            max-width: 800px;
+            box-sizing: border-box;
+            margin: 15px auto;
+        }
+        button {
+            padding: 12px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            width: 100%;
+            background: linear-gradient(to bottom, #666666, #4d4d4d);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: normal;
+            word-wrap: break-word;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 0;
+            min-width: 0;
+            height: 100%;
+        }
+        /*
+        button:hover {
+            background: linear-gradient(to bottom, #808080, #666666);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        */
+        button:not([style*="background-color: #ff4444"]):hover {
+            background: linear-gradient(to bottom, #ff0000, #cc0000);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .password-container {
+            margin-bottom: 30px;
+        }
+        .password-container input {
+            padding: 12px 20px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #808080;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        .password-container input:focus {
+            outline: none;
+            border-color: #a0a0a0;
+            box-shadow: 0 0 10px rgba(128, 128, 128, 0.5);
+        }
+        .hidden {
+            display: none;
+        }
+        h1 {
+            font-family: 'Creepster', cursive;
+            color: #ff1a1a;
+            text-shadow: 
+                2px 2px 0px #800000,
+                -2px -2px 0px #800000,
+                0 0 8px rgba(255, 0, 0, 0.7),
+                0 0 15px rgba(255, 0, 0, 0.5),
+                2px 2px 3px rgba(0, 0, 0, 0.9);
+            font-size: 3.8em;
+            margin-bottom: 0.5em;
+            letter-spacing: 3px;
+            transform: rotate(-1deg);
+            font-weight: 400;
+            line-height: 0.9;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1 span.break {
+            display: block;
+            height: 0.1em;
+        }
+        #buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        #buttons::after {
+            content: '';
+            grid-column: 1/-1;
+        }
+        #buttons > form:last-child:nth-child(2n - 1) {
+            grid-column-end: -2;
+        }
+        #buttons > form {
+            margin: auto;
+            width: 100%;
+            min-width: 0;
+        }
+        form {
+            margin: 0;
+        }
+        .bottom-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-direction: row; /* Changed from column to row */
+            align-items: center;
+            width: 100%;
+        }
+        .bottom-buttons form {
+            width: auto;
+            max-width: none; /* Remove max-width restriction */
+        }
+        .bottom-buttons button {
+            min-height: 45px;
+            width: 160px; /* Fixed width for both buttons */
+            min-width: 0;
+        }
+        [type="submit"][style*="background-color: #ff4444"] {
+            background: linear-gradient(to bottom, #ff4444, #cc0000);
+            margin: 0;
+        }
+        [type="submit"][style*="background-color: #ff4444"]:hover {
+            background: linear-gradient(to bottom, #ff6666, #ff4444);
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+                margin: 10px;
+                width: calc(100% - 20px);
+            }
+            button {
+                padding: 8px;
+                font-size: 11px;
+                min-height: 40px;
+                letter-spacing: 0.5px;
+            }
+            .password-container input {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            h1 {
+                font-size: 2.5em;
+                letter-spacing: 2px;
+                margin-bottom: 0.8em;
+            }
+            #buttons {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                padding: 5px;
+            }
+            .bottom-buttons {
+                flex-direction: column;
+            }
+            .bottom-buttons button {
+                width: 200px; /* Slightly wider on mobile */
+            }
+        }
+        @media (min-width: 601px) and (max-width: 900px) {
+            #buttons {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+        .password-error {
+            color: #ff4444;
+            font-size: 14px;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .password-error.show {
+            opacity: 1;
+        }
+
+        .password-container input.error {
+            border-color: #ff4444;
+            animation: shake 0.5s;
+        }
+
+        .password-container input.success {
+            border-color: #44ff44;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes wobble1 {
+            0%, 100% { transform: translate(0, 0) rotate(-1deg); }
+            50% { transform: translate(2px, -2px) rotate(2deg); }
+        }
+        
+        @keyframes wobble2 {
+            0%, 100% { transform: translate(0, 0) rotate(1deg); }
+            50% { transform: translate(-2px, 2px) rotate(-2deg); }
+        }
+        
+        @keyframes wobble3 {
+            0%, 100% { transform: translate(0, 0) rotate(-2deg); }
+            50% { transform: translate(-1px, -1px) rotate(1deg); }
+        }
+
+        h1 span {
+            display: inline-block;
+            animation-duration: 2.5s;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;
+        }
+        
+        h1 span:nth-child(2n) { animation-name: wobble1; }
+        h1 span:nth-child(3n) { animation-name: wobble2; }
+        h1 span:nth-child(3n+1) { animation-name: wobble3; }
+        h1 span:nth-child(n) { animation-delay: calc(var(--n) * 0.1s); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span style="--n: 1">M</span>
+            <span style="--n: 2">u</span>
+            <span style="--n: 3">r</span>
+            <span style="--n: 4">d</span>
+            <span style="--n: 5">e</span>
+            <span style="--n: 6">r</span>
+            <span style="--n: 7" class="break"></span>
+            <span style="--n: 8">M</span>
+            <span style="--n: 9">y</span>
+            <span style="--n: 10">s</span>
+            <span style="--n: 11">t</span>
+            <span style="--n: 12">e</span>
+            <span style="--n: 13">r</span>
+            <span style="--n: 14">y</span>
+        </h1>
+        <div class="password-container">
+            <input type="password" id="password" placeholder="Enter password" oninput="checkPassword()">
+            <div id="password-error" class="password-error">Incorrect password</div>
+        </div>
+        <div id="buttons" style="display: none;">
+            <form action="/chimpanzee_test" method="get">
+                <button type="submit">Chimpanzee Test</button>
+            </form>
+            <form action="/color_connect" method="get">
+                <button type="submit">Color Connect</button>
+            </form>
+            <form action="/connections" method="get">
+                <button type="submit">Connections</button>
+            </form>
+            <form action="/login" method="get">
+                <button type="submit">Email</button>
+            </form>
+            <form action="/lights_out" method="get">
+                <button type="submit">Lights Out</button>
+            </form>
+            <form action="/minesweeper_game" method="get">
+                <button type="submit">Minesweeper</button>
+            </form>
+            <form action="/number_memory" method="get">
+                <button type="submit">Number Memory</button>
+            </form>
+            <form action="/quiz" method="get">
+                <button type="submit">Quiz</button>
+            </form>
+            <form action="/riddles1" method="get">
+                <button type="submit">Riddles 1</button>
+            </form>
+            <form action="/riddles2" method="get">
+                <button type="submit">Riddles 2</button>
+            </form>
+            <form action="/riddles3" method="get">
+                <button type="submit">Riddles 3</button>
+            </form>
+            <form action="/sequence_memory" method="get">
+                <button type="submit">Sequence Memory</button>
+            </form>
+            <form action="/shape_challenge" method="get">
+                <button type="submit">Shape Challenge</button>
+            </form>
+            <form action="/verbal_memory" method="get">
+                <button type="submit">Verbal Memory</button>
+            </form>
+            <form action="/visual_memory" method="get">
+                <button type="submit">Visual Memory</button>
+            </form>
+            <form action="/wordle" method="get">
+                <button type="submit">Wordle</button>
+            </form>
+        </div>
+        <div class="bottom-buttons">
+            <form action="https://importantworkinformation.com/iced.jpg" method="get">
+                <button type="submit">Hemmelig oppgave</button>
+            </form>
+            <form action="/reset" method="post">
+                <button type="submit" style="background-color: #ff4444;">Reset Progress</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Initial state check on page load
+        window.onload = function() {
+            const buttons = document.getElementById('buttons');
+            // Check if already authenticated
+            if (localStorage.getItem('authenticated') === 'true') {
+                buttons.style.display = 'grid';
+            } else {
+                buttons.style.display = 'none';
+            }
+        }
+
+        function checkPassword() {
+            const passwordInput = document.getElementById('password');
+            const buttons = document.getElementById('buttons');
+            const errorMsg = document.getElementById('password-error');
+            const password = passwordInput.value.trim().toLowerCase();
+            
+            // Remove any existing classes
+            passwordInput.classList.remove('error', 'success');
+            errorMsg.classList.remove('show');
+
+            if (password === 'sos.kom666') {
+                buttons.style.display = 'grid';
+                passwordInput.classList.add('success');
+                // Store authentication state
+                localStorage.setItem('authenticated', 'true');
+            } else {
+                buttons.style.display = 'none';
+                if (password.length >= 3) {
+                    passwordInput.classList.add('error');
+                    errorMsg.classList.add('show');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

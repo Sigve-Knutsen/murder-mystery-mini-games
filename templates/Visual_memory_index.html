@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Visual Memory Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            transition: background-color 0.5s;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat({{ grid_size }}, 1fr);
+            grid-template-rows: repeat({{ grid_size }}, 1fr);
+            gap: 10px;
+            width: 90vmin;
+            height: 90vmin;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            background-color: #1e1e1e;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .cell:active {
+            transform: scale(0.95);
+        }
+        .cell.red {
+            background-color: #ff0000;
+        }
+        .cell.grey {
+            background-color: #6c757d;
+        }
+        .cell.disabled {
+            pointer-events: none;
+        }
+        .message {
+            color: #ff6b6b;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .flash {
+            background-color: #00ff00 !important;
+        }
+        @media (max-width: 600px) {
+            .grid {
+                gap: 5px;
+            }
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .overlay div {
+            text-align: center;
+            background: rgba(30, 30, 30, 0.95);
+            padding: min(2em, 5vw);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+            transform: scale(0.9);
+            animation: scaleIn 0.3s ease-out forwards;
+            width: min(90%, 400px);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .overlay h2 {
+            color: #ff4444;
+            margin-bottom: 0.8em;
+            font-size: clamp(1.5em, 5vw, 2em);
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        .overlay p {
+            margin-bottom: 1.5em;
+            font-size: 1.2em;
+            color: #ddd;
+        }
+        .overlay button {
+            width: min(100%, 200px);
+            padding: clamp(10px, 3vw, 15px) clamp(20px, 5vw, 30px);
+            font-size: clamp(0.9em, 3vw, 1.1em);
+            background: linear-gradient(to bottom, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .overlay button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.9); }
+            to { transform: scale(1); }
+        }
+        .success-message {
+            color: #4CAF50;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(76, 175, 80, 0.2);
+            border-radius: 10px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    {% if win %}
+        <div class="success-message">
+            {{ success_number }}
+        </div>
+    {% endif %}
+    
+    {% if error %}
+        <p class="message">Incorrect pattern, try again!</p>
+    {% endif %}
+    <div class="grid">
+        {% for row in range(grid_size) %}
+            {% for col in range(grid_size) %}
+                <div class="cell" data-row="{{ row }}" data-col="{{ col }}"></div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    <form id="next-level-form" method="post" action="{{ url_for('visual_memory_next_level') }}" style="display: none;">
+        <button type="submit">Next Level</button>
+    </form>
+    <div class="overlay" id="game-over-overlay">
+        <div>
+            <h2>Game Over!</h2>
+            <form method="post" action="{{ url_for('visual_memory_restart') }}">
+                <button type="submit">Try Again</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const pattern = {{ pattern|tojson }};
+        const cells = document.querySelectorAll('.cell');
+        const body = document.body;
+        let wrongGuesses = {{ wrong_guesses }};
+        let selectedSquares = [];
+        
+        {% if win %}
+        // If player has won, don't show the pattern or allow further gameplay
+        cells.forEach(cell => cell.classList.add('disabled'));
+        {% else %}
+        function showPattern() {
+            cells.forEach(cell => cell.classList.add('disabled'));
+            pattern.forEach(([row, col]) => {
+                const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+                cell.classList.add('red');
+            });
+            setTimeout(() => {
+                cells.forEach(cell => {
+                    cell.classList.remove('red');
+                    cell.classList.remove('disabled');
+                });
+            }, 2000);
+        }
+
+        function checkPattern(row, col) {
+            fetch('{{ url_for("visual_memory_check_pattern") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `square=${row},${col}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+                cell.classList.add('disabled');
+                if (data.success) {
+                    cell.classList.add('red');
+                    if (data.next_level) {
+                        body.classList.add('flash');
+                        setTimeout(() => {
+                            body.classList.remove('flash');
+                            document.getElementById('next-level-form').submit();
+                        }, 500);
+                    }
+                } else {
+                    cell.classList.add('grey');
+                    wrongGuesses += 1;
+                    if (data.game_over) {
+                        document.getElementById('game-over-overlay').style.display = 'flex';
+                    }
+                }
+            });
+        }
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', () => {
+                const row = cell.getAttribute('data-row');
+                const col = cell.getAttribute('data-col');
+                checkPattern(row, col);
+            });
+        });
+
+        showPattern();
+        {% endif %}
+    </script>
+</body>
+</html>

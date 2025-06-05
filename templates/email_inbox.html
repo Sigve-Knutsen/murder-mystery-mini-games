@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database - Reports</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            display: flex;
+            background: #000080; /* Windows 95 blue */
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 256px;
+            background: #c0c0c0; /* Classic Windows gray */
+            padding: 12px;
+            height: 100vh;
+            border-right: 4px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            z-index: 100;
+        }
+
+        .compose-btn {
+            background: #c0c0c0;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff; /* 3D effect */
+            padding: 10px 20px;
+            color: #000000;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .compose-btn:hover {
+            background: #d0d0d0;
+        }
+        
+        .compose-btn:active {
+            border-color: #808080 #ffffff #ffffff #808080; /* Pressed effect */
+        }
+
+        .sidebar-item {
+            padding: 12px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            color: #000000;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-item:hover {
+            border-color: #000080;
+            background: #d0d0d0;
+        }
+
+        .sidebar-item.active:hover,
+        .sidebar-item.active {
+            background: #000080;
+            color: #ffffff;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 12px;
+            background: #c0c0c0;
+            border: 4px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            margin: 8px;
+            min-width: 0;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 16px);
+        }
+
+        .email {
+            border-bottom: 1px solid #808080;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
+            text-decoration: none;
+            color: #000000;
+            gap: 25px;
+            background: #ffffff;
+            margin-bottom: 4px;
+            border: 1px solid #808080;
+            transition: background-color 0.1s ease;
+        }
+
+        .email:hover {
+            background: #ffffcc; /* Light yellow highlight */
+        }
+        
+        .email:active {
+            background: #e6e6e6;
+        }
+        
+        .email:hover .email-subject {
+            text-decoration: underline;
+            color: #0000A0;
+        }
+
+        .logout-button {
+            color: #000000;
+            background: #c0c0c0;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 8px 10px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .logout-button:hover {
+            background: #d0d0d0;
+        }
+        
+        .logout-button:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        .email-from {
+            width: 200px;
+            min-width: 200px;
+            font-weight: bold;
+            text-align: left;
+            padding-right: 15px;
+        }
+
+        .email-subject {
+            flex: 1;
+            font-weight: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+            padding-right: 15px;
+            color: #000080;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .email-date {
+            width: 100px;
+            text-align: right;
+            color: #808080;
+            font-size: 12px;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-subject {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #000080;
+            font-weight: bold;
+        }
+
+        .modal-meta {
+            color: #000000;
+            margin-bottom: 8px;
+        }
+
+        .modal-body {
+            line-height: 1.6;
+            color: #000000;
+            white-space: pre-wrap;
+            margin-top: 20px;
+            padding: 20px;
+            border: 3px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            background: #ffffff;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: #c0c0c0;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 8px;
+            cursor: pointer;
+            margin-right: 12px;
+            color: #000000;
+            min-width: 40px;
+            height: 40px;
+            justify-content: center;
+        }
+
+        .menu-toggle:hover {
+            background: #d0d0d0;
+        }
+        
+        .menu-toggle:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        .menu-toggle .material-icons {
+            font-size: 24px;
+            vertical-align: middle;
+        }
+
+        .main-content-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 8px;
+            background: #000080;
+            color: #ffffff;
+            padding: 8px;
+            border: 2px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        .header-title {
+            flex: 1;
+            margin: 0;
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            font-size: 16px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-shadow: 2px 2px 0px #000000;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            padding: 0 5px;
+        }
+        
+        /* Retro scanner effect for header */
+        @keyframes scanline {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 0 100%;
+            }
+        }
+        
+        .header-title::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                         rgba(255,255,255,0) 0%, 
+                         rgba(255,255,255,0.15) 50%, 
+                         rgba(255,255,255,0) 100%);
+            background-size: 100% 8px;
+            pointer-events: none;
+            animation: scanline 4s linear infinite;
+            opacity: 0.4;
+        }
+
+        .emails {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* 90s style scrollbar */
+        ::-webkit-scrollbar {
+            width: 16px;
+            height: 16px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #c0c0c0;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #808080;
+            border: 1px solid #ffffff;
+        }
+        
+        ::-webkit-scrollbar-button {
+            background: #c0c0c0;
+            border: 1px solid #808080;
+            height: 16px;
+            width: 16px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            background: #c0c0c0;
+            margin: 15% auto;
+            padding: 20px;
+            border: 4px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            width: 300px;
+            text-align: center;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #ffffff;
+            border: 3px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            color: #000000;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        .modal button {
+            background: #c0c0c0;
+            color: #000000;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .modal button:hover {
+            background: #d0d0d0;
+        }
+        
+        .modal button:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 99;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                overflow: hidden;
+            }
+            
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                top: 0;
+                left: 0;
+                width: 75%;
+                max-width: 256px;
+                height: 100vh;
+                box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .main-content {
+                margin: 0;
+                padding: 6px;
+                height: 100vh;
+                border: none;
+            }
+
+            .main-content-header {
+                padding: 10px 8px;
+            }
+
+            .header-title {
+                font-size: 14px;
+                max-width: 170px; /* Ensure it doesn't push out logout button */
+                letter-spacing: 0;
+                text-shadow: 1px 1px 0px #000000;
+            }
+            
+            .header-title::after {
+                animation: none; /* Disable animation on mobile for performance */
+            }
+            
+            .logout-button {
+                padding: 6px 8px;
+                font-size: 14px;
+            }
+            
+            .logout-button .material-icons {
+                font-size: 20px;
+            }
+            
+            .email {
+                flex-direction: column;
+                padding: 10px;
+                gap: 6px;
+            }
+
+            .email-from, .email-subject, .email-date {
+                width: 100%;
+                padding: 0;
+                text-align: left;
+                min-width: unset;
+            }
+            
+            .email-date {
+                text-align: left;
+            }
+
+            .email-subject {
+                order: -1; /* Show subject first on mobile */
+                font-weight: bold;
+                font-size: 16px;
+                color: #000080;
+                margin-bottom: 3px;
+                padding-bottom: 3px;
+                border-bottom: 1px dashed #c0c0c0;
+                white-space: normal; /* Allow wrapping on mobile */
+                line-height: 1.3;
+            }
+            
+            .email-from {
+                font-weight: normal;
+                font-size: 14px;
+            }
+
+            .modal-content {
+                width: 90%;
+                margin: 30% auto;
+            }
+            
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            
+            ::-webkit-scrollbar-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="sidebar">
+        <a href="{{ url_for('compose') }}">
+            <button class="compose-btn">
+                <span class="material-icons">add_circle</span>
+                New Report
+            </button>
+        </a>
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('inbox') }}" style="text-decoration: none;">
+                <div class="sidebar-item {% if view_type == 'inbox' or not view_type %}active{% endif %}">
+                    <span class="material-icons">folder</span>
+                    <span>Active Reports</span>
+                </div>
+            </a>
+            <a href="{{ url_for('sent') }}" style="text-decoration: none;">
+                <div class="sidebar-item {% if view_type == 'sent' %}active{% endif %}">
+                    <span class="material-icons">description</span>
+                    <span>Archive</span>
+                </div>
+            </a>
+            <a href="{{ url_for('blackmail') }}" style="text-decoration: none;">
+                <div class="sidebar-item {% if view_type == 'blackmail' %}active{% endif %}">
+                    <span class="material-icons">vpn_key</span>
+                    <span>Restricted Access</span>
+                </div>
+            </a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="main-content-header">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <span class="material-icons">menu</span>
+            </button>
+            <h2 class="header-title">
+                {% if view_type == 'inbox' or not view_type %}Active Reports
+                {% elif view_type == 'sent' %}Archive
+                {% elif view_type == 'blackmail' %}Restricted Access
+                {% else %}{{ view_type|title }}
+                {% endif %}
+            </h2>
+            <a href="{{ url_for('logout') }}" class="logout-button">
+                <span class="material-icons">logout</span>
+                <span class="logout-text">End Session</span>
+            </a>
+        </div>
+        <div class="emails">
+            {% for email in emails %}
+            <a href="{{ url_for('view_email', email_id=loop.index0, view_type=view_type) }}" class="email">
+                {% if view_type == 'sent' %}
+                    <div class="email-subject">{{ email.subject }}</div>
+                    <div class="email-from">Reporting officer: {{ email.to }}</div>
+                {% elif view_type == 'blackmail' %}
+                    <div class="email-subject">{{ email.subject }}</div>
+                    <div class="email-from">Subject: {{ email.to }}</div>
+                {% else %}
+                    <div class="email-subject">{{ email.subject }}</div>
+                    <div class="email-from">Reporting officer: {{ email.from }}</div>
+                {% endif %}
+                <div class="email-date">{{ email.date.split()[0] }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if view_type == 'blackmail' and not authenticated %}
+    <div id="passwordModal" class="modal" style="display: block;">
+        <div class="modal-content">
+            <h2>Restricted Access</h2>
+            <form method="POST" action="{{ url_for('blackmail') }}">
+                <input type="password" name="blackmail_password" placeholder="Security code..." required>
+                <button type="submit">Confirm</button>
+                <button type="button" onclick="window.location.href='{{ url_for('inbox') }}'">Cancel</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Konverter Python-listen til JavaScript-array når siden lastes
+        const emailsData = {{ emails|tojson|safe }};
+        const overlay = document.getElementById('overlay');
+        
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+            overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+        }
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (e.target !== sidebar && 
+                !sidebar.contains(e.target) && 
+                e.target !== menuToggle && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+                overlay.style.display = 'none';
+            }
+        });
+        
+        // Also close sidebar when clicking overlay
+        overlay.addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            overlay.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Memory Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .container {
+            text-align: center;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+            width: 90%;
+            max-width: 400px;
+        }
+        #sequence {
+            font-size: 2em; /* Increase font size */
+            margin: 20px 0;
+        }
+        #input-form {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 100%;
+            max-width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #CC0000;
+        }
+        .timer-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background-color: #FF0000;
+            animation: decrease 3s linear forwards;
+            width: 100%;
+        }
+        @keyframes decrease {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0;
+            }
+        }
+        .victory-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+    <script>
+        setTimeout(function() {
+            document.getElementById('sequence').style.display = 'none';
+            document.getElementById('input-form').style.display = 'block';
+        }, 3000); // Show sequence for 3 seconds
+    </script>
+</head>
+<body>
+    <div class="container">
+        <p id="sequence">{{ sequence|join(' ') }}</p>
+        <form id="input-form" action="{{ url_for('number_memory_check') }}" method="post" style="display:none;">
+            <input type="text" name="sequence" required>
+            <button type="submit">Submit</button>
+        </form>
+        <div class="timer-bar"></div>
+    </div>
+
+    {% if win %}
+    <div class="victory-popup">
+        <h2 style="color: #ffd700; margin-bottom: 15px;">Victory!</h2>
+        <p style="color: #fff; font-size: 1.2em;"> {{ success_number }}</p>
+        <a href="{{ url_for('number_memory_index') }}" class="restart-button" style="
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #ff0000;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        ">Play Again</a>
+    </div>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Minesweeper</title>
+    <style>
+        /* Reset and basic styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        .game-container {
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            width: 95vmin;
+            max-width: 95vw;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;  /* Increase gap for better spacing */
+            max-height: none;  /* Remove max-height constraint */
+            margin: 10px;
+            overflow: hidden; /* Add this to contain children */
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;  /* Add more space above the button */
+            margin-bottom: 20px;
+        }
+        .controls form {
+            width: auto;
+        }
+        .controls button {
+            background-color: #444444;
+            border: none;
+            color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: 600;
+            min-width: 250px;  /* Slightly wider */
+            min-height: 80px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+        .controls button:hover {
+            background-color: #555555;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .message {
+            font-size: 2em;
+            padding: 20px;
+            background-color: #333;
+            color: #ff6b6b;
+            text-align: center;
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .table-container {
+            width: min(70vh, 90vw);  /* Reduce from 95vw to 90vw */
+            height: min(70vh, 90vw);  /* Make it perfectly square */
+            margin: 0 auto;
+            overflow: hidden; /* Add this to contain the table */
+        }
+        table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;  /* Ensure equal column widths */
+        }
+        tr {
+            display: flex;  /* Use flexbox for rows */
+            height: 12.5%; /* 100% / 8 rows */
+        }
+        td {
+            flex: 1;  /* Each cell takes equal space */
+            position: relative;
+            border: 1px solid #444444;
+            aspect-ratio: 1;  /* Force square shape */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: min(4vmin, 24px);
+        }
+        form {
+            position: relative;  /* Changed from absolute */
+            width: 100%;
+            height: 100%;
+        }
+        .cell-btn {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #3d3d3d;
+            font-size: min(4vmin, 24px);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .cell-btn:hover {
+            background-color: #4d4d4d;
+        }
+        .revealed .cell-btn {
+            background-color: #2d2d2d;
+            cursor: default;
+            pointer-events: none;
+        }
+        .mine, td span {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            font-size: min(4vmin, 24px);
+        }
+        
+        .mine {
+            color: #ff6b6b;
+        }
+        
+        td span {
+            color: #ffffff;
+        }
+        .flagged .cell-btn {
+            background-color: #ffd700;
+            color: #1a1a1a;
+        }
+        .btn-restart {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(220, 53, 69, 0.2);
+            font-weight: 500;
+            width: 100%; /* Make button fill container width */
+        }
+        .btn-restart:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        .btn-restart:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+        }
+        .restart-container {
+            margin-top: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 0 15px; /* Add padding to match game container */
+        }
+        
+        .restart-container form {
+            width: 100%; /* Make form fill container width */
+        }
+        /* Responsive design */
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+            
+            .game-container {
+                padding: 10px;
+                width: 98vw;     /* Almost full width on mobile */
+                margin: 5px;
+            }
+            
+            .table-container {
+                width: min(85vh, 85vw);   /* Slightly smaller on mobile */
+                height: min(85vh, 85vw);
+            }
+            
+            .mode-controls {
+                margin-top: 15px;
+            }
+            
+            .mode-toggle {
+                padding: 10px 20px;
+                font-size: 18px;
+            }
+            
+            td {
+                font-size: min(3.5vmin, 20px);  /* Slightly smaller font on mobile */
+            }
+            
+            .cell-btn {
+                font-size: min(3.5vmin, 20px);
+            }
+            
+            .controls button {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+
+            .message {
+                font-size: 1em;
+            }
+
+            .btn-restart {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+        }
+        .mode-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            width: 100%;
+        }
+        .mode-controls form {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: static;
+        }
+        .mode-label {
+            font-size: 1.5em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .mode-toggle {
+            background: linear-gradient(145deg, #333, #222);
+            border: none;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .mode-toggle[data-mode="reveal"] {
+            background: linear-gradient(145deg, #2d5a88, #1e3c5a);
+        }
+        .mode-toggle[data-mode="flag"] {
+            background: linear-gradient(145deg, #884b2d, #5a321e);
+        }
+        .mode-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.1),
+                transparent
+            );
+            transition: 0.5s;
+        }
+        .mode-toggle:hover::before {
+            left: 100%;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes flash {
+            0%, 100% { background-color: #1a1a1a; }
+            50% { background-color: #660000; }
+        }
+
+        body.shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both,
+                      flash 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body {% if game_over and not win %}class="shake"{% endif %}>
+    <div class="game-container">
+        {% if game_over %}
+            <div class="message">
+                {% if win %}
+                    🎉 Congratulations! You won!
+                {% else %}
+                    Game over, you hit a mine!
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="table-container">
+            <table>
+                {% for y, row in board %}
+                    <tr>
+                        {% for x, cell in row %}
+                            <td class="{% if cell.revealed %}revealed{% endif %}{% if cell.flagged %} flagged{% endif %}">
+                                {% if cell.revealed %}
+                                    {% if cell.mine %}
+                                        <span class="mine">💣</span>
+                                    {% elif cell.number > 0 %}
+                                        <span>{{ cell.number }}</span>
+                                    {% else %}
+                                        &nbsp;
+                                    {% endif %}
+                                {% else %}
+                                    <form method="post" action="/minesweeper_game/cell/{{ x }}/{{ y }}">
+                                        <button type="submit" class="cell-btn">
+                                            {% if cell.flagged %}🚩{% endif %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="mode-controls">
+            <form method="post" action="/minesweeper_game">
+                <button type="submit" name="toggle_mode" class="mode-toggle" data-mode="{{ mode }}">
+                    {% if mode == 'reveal' %}
+                        🔍 Reveal
+                    {% else %}
+                        🚩 Flag
+                    {% endif %}
+                </button>
+            </form>
+            <form method="post" action="/minesweeper_game/reset">
+                <button type="submit" class="mode-toggle">Reset Game</button>
+            </form>
+        </div>
+        {% if win %}
+        <div class="victory-popup" style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        ">
+            <h2 style="color: #ffd700; margin-bottom: 15px;">Victory!</h2>
+            <p style="color: #fff; font-size: 1.2em;">{{ success_number }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

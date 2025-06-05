@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connections Game</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .container.flash-wrong {
+            background-color: #ff0000;
+            opacity: 0.7;
+            animation: shake 0.5s ease-in-out;
+        }
+        .container.game-over {
+            background-color: red;
+        }
+        .game-over-message {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: all 0.15s ease-in-out;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .content {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .grid-item {
+            padding: 20px;
+            border: 1px solid #333;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s, border-color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px; /* Ensure equal height */
+            background-color: #2e2e2e;
+        }
+        .grid-item.selected {
+            background-color: #555;
+            border-color: #777;
+        }
+        .grid-item.guessed {
+            background-color: #444;
+            cursor: not-allowed;
+        }
+        .submit-btn, .restart-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #ff0000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .submit-btn:hover, .restart-btn:hover {
+            background-color: #cc0000;
+        }
+        .correct-groups {
+            margin-top: 20px;
+        }
+        .correct-groups ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .correct-groups li {
+            background-color: #2e2e2e;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .correct-groups li strong {
+            font-weight: bold;
+        }
+        @media (max-width: 600px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr); /* Adjust grid for smaller screens */
+                gap: 5px;
+            }
+            .grid-item {
+                padding: 10px;
+                height: 80px; /* Adjust height for smaller screens */
+            }
+            .submit-btn, .restart-btn {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+        .popup-buttons {
+            display: flex;
+            justify-content: center;  /* Endret til center */
+            margin-top: 10px;
+        }
+        
+        .popup-button {
+            width: 100px;  /* Fast bredde for én knapp */
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+    <script>
+        function toggleSelection(element) {
+            const selectedItems = document.querySelectorAll('.grid-item.selected');
+            if (!element.classList.contains('selected') && selectedItems.length >= 4) {
+                return;
+            }
+            if (!element.classList.contains('guessed')) {
+                element.classList.toggle('selected');
+                const checkbox = element.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+
+        function validateSelection() {
+            const selectedItems = document.querySelectorAll('.grid-item.selected');
+            if (selectedItems.length !== 4) {
+                return false;
+            }
+            return true;
+        }
+
+        window.onload = function() {
+            if ({{ flash_wrong|tojson }}) {
+                const container = document.querySelector('.container');
+                container.classList.add('flash-wrong');
+                // Force reflow to ensure animation plays
+                void container.offsetWidth;
+                container.style.opacity = '1';
+                setTimeout(() => {
+                    container.classList.remove('flash-wrong');
+                }, 150);
+            }
+            {% if show_victory_popup %}
+                document.getElementById('password-popup').style.display = 'block';
+            {% endif %}
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <form action="{{ url_for('connections_submit') }}" method="post" onsubmit="return validateSelection()">
+                <div class="grid-container">
+                    {% for word in words %}
+                        <div class="grid-item {% if word in guessed_words %}guessed{% endif %}" onclick="toggleSelection(this)" style="background-color: {% for group, guessed_words in correct_groups %}{% if word in guessed_words %}{{ category_colors[group] }}{% endif %}{% endfor %}">
+                            <input type="checkbox" name="group" value="{{ word }}" style="display:none;" {% if word in guessed_words %}disabled{% endif %}>{{ word }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <input type="submit" value="Submit" class="submit-btn">
+            </form>
+            <form action="{{ url_for('connections_restart') }}" method="get">
+                <input type="submit" value="Start på nytt" class="restart-btn">
+            </form>
+            {% if game_over %}
+            <div class="game-over-message">Game Over</div>
+            {% endif %}
+            <div class="correct-groups">
+                <ul>
+                    {% for group, words in correct_groups %}
+                        <li><strong>{{ group }}:</strong> {{ words | join(', ') }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Endre popup HTML -->
+            <div id="password-popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); z-index: 1000;">
+                <p style="color: #e0e0e0;">{{ connections_password }}</p>
+                <div class="popup-buttons">
+                    <button onclick="document.getElementById('password-popup').style.display='none'" class="popup-button">Lukk</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
