@@ -1,6 +1,7 @@
 # Murder Mystery Mini-Games
 
 A web-based murder mystery game built with Flask featuring multiple mini-games, puzzles, and an interactive email system. Players must solve various challenges to uncover clues and progress through the mystery.
+Can be accessed at: https://stygve.pythonanywhere.com/
 
 ### Mini-Games
 
